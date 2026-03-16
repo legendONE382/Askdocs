@@ -1,44 +1,64 @@
-import { createHmac, timingSafeEqual } from "crypto";
-
 const COOKIE_NAME = "askdocs_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
 
 function getSecret(): string {
-  return process.env.APP_AUTH_SECRET || "change-me-in-production";
+  const secret = process.env.APP_AUTH_SECRET || "";
+  if (process.env.NODE_ENV === "production" && secret.length < 32) {
+    throw new Error("APP_AUTH_SECRET must be set to a strong value in production.");
+  }
+  return secret || "dev-only-insecure-secret-change-me";
 }
 
-function base64url(input: string): string {
+function base64urlEncode(input: string): string {
   return Buffer.from(input, "utf8").toString("base64url");
 }
 
-function sign(input: string): string {
-  return createHmac("sha256", getSecret()).update(input).digest("base64url");
+function base64urlDecode(input: string): string {
+  return Buffer.from(input, "base64url").toString("utf8");
 }
 
-export function createSessionToken(username: string): string {
+async function sign(input: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(getSecret()),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(input));
+  return Buffer.from(signature).toString("base64url");
+}
+
+function timingSafeStringEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+export async function createSessionToken(username: string): Promise<string> {
   const payload = {
     sub: username,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS
   };
-  const encoded = base64url(JSON.stringify(payload));
-  return `${encoded}.${sign(encoded)}`;
+  const encoded = base64urlEncode(JSON.stringify(payload));
+  const signature = await sign(encoded);
+  return `${encoded}.${signature}`;
 }
 
-export function verifySessionToken(token?: string): { valid: boolean; user?: string } {
+export async function verifySessionToken(token?: string): Promise<{ valid: boolean; user?: string }> {
   if (!token || !token.includes(".")) return { valid: false };
   const [encoded, signature] = token.split(".");
-  const expected = sign(encoded);
+  if (!encoded || !signature) return { valid: false };
 
-  const sigBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expected);
-  if (sigBuffer.length !== expectedBuffer.length) return { valid: false };
-  if (!timingSafeEqual(sigBuffer, expectedBuffer)) return { valid: false };
+  const expected = await sign(encoded);
+  if (!timingSafeStringEqual(signature, expected)) return { valid: false };
 
   try {
-    const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as {
-      sub: string;
-      exp: number;
-    };
+    const payload = JSON.parse(base64urlDecode(encoded)) as { sub: string; exp: number };
     if (!payload.sub || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) {
       return { valid: false };
     }
@@ -57,8 +77,12 @@ export function getSessionTtl(): number {
 }
 
 export function getCredentials() {
-  return {
-    username: process.env.APP_LOGIN_USER || "admin",
-    password: process.env.APP_LOGIN_PASSWORD || "admin123"
-  };
+  const username = process.env.APP_LOGIN_USER || "admin";
+  const password = process.env.APP_LOGIN_PASSWORD || "admin123";
+
+  if (process.env.NODE_ENV === "production" && password === "admin123") {
+    throw new Error("APP_LOGIN_PASSWORD must be changed in production.");
+  }
+
+  return { username, password };
 }
