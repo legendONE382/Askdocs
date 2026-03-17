@@ -4,7 +4,7 @@ import { getCookieName, verifySessionToken } from "@/lib/auth";
 
 const PUBLIC_PATHS = new Set(["/login", "/api/auth/login", "/api/auth/logout"]);
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get(getCookieName())?.value;
-  const session = verifySessionToken(token);
+  const session = await verifySessionToken(token);
 
   if (pathname === "/login" && session.valid) {
     return NextResponse.redirect(new URL("/", request.url));

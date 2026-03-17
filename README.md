@@ -11,6 +11,17 @@ Users authenticate, upload docs, and chat with document-grounded answers + citat
 - Default chat model: **`open-mistral-nemo`** (free-tier friendly), override via env.
 - RAG answers with source citation snippets.
 
+## Full app functionality (end-user flow)
+
+1. User opens your deployed URL and is redirected to `/login`.
+2. User signs in with credentials you set in Vercel env vars.
+3. User lands on AskDocs dashboard and selects/creates a project workspace name.
+4. User uploads one or more files (`pdf`, `docx`, `txt`, `md`, `csv`) and clicks **Ingest Documents**.
+5. Backend extracts text, chunks it, requests Mistral embeddings, and stores vectors in the project index.
+6. User asks freeform questions (or uses quick actions) in the chat box.
+7. Backend embeds the question, retrieves most similar chunks, generates a grounded answer with citations, and returns it to UI.
+8. User logs out securely when done.
+
 ## Security controls
 
 - Login gate for app and APIs via signed HttpOnly session cookie.

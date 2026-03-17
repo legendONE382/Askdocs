@@ -1,13 +1,15 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import mammoth from "mammoth";
-import pdfParse from "pdf-parse";
 
 import { chunkText } from "@/lib/chunker";
 import { embedTexts } from "@/lib/mistral";
 import { addChunks, projectSize, type StoredChunk } from "@/lib/vector-store";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { AppError, LIMITS, safeErrorMessage, sanitizeFileName, sanitizeProject } from "@/lib/security";
+
+type PdfParseFn = (dataBuffer: Buffer, options?: Record<string, unknown>) => Promise<{ text?: string }>;
+const pdfParse = require("pdf-parse") as PdfParseFn;
 
 const ALLOWED_EXTENSIONS = new Set(["pdf", "docx", "txt", "md", "csv"]);
 
