@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUp, Loader2, SendHorizonal, Sparkles } from "lucide-react";
+
+import { getCurrentUser, logoutUser } from "@/lib/client-auth";
 
 type Citation = {
   label: number;
@@ -32,10 +34,22 @@ export default function HomePage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [ingesting, setIngesting] = useState(false);
   const [chatting, setChatting] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    setCurrentUser(user);
+    setAuthReady(true);
+  }, [router]);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    logoutUser();
     router.push("/login");
     router.refresh();
   }
@@ -106,6 +120,14 @@ export default function HomePage() {
     }
   }
 
+  if (!authReady) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-7xl items-center justify-center p-6">
+        <p className="text-sm text-slate-300">Checking session...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 p-6 lg:flex-row">
       <aside className="panel h-fit w-full space-y-5 p-5 lg:sticky lg:top-6 lg:w-[360px]">
@@ -116,6 +138,8 @@ export default function HomePage() {
           </div>
           <button onClick={logout} className="rounded-lg border border-slate-600 px-3 py-1 text-xs hover:border-accent">Logout</button>
         </div>
+
+        <p className="text-xs text-slate-400">Signed in as: <span className="font-medium text-slate-200">{currentUser}</span></p>
 
         <label className="block text-sm font-medium text-slate-200">Project workspace</label>
         <input
