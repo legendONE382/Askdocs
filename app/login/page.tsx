@@ -1,13 +1,11 @@
 "use client";
 
 import { type FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 
 import { createUser, getCurrentUser, loginUser } from "@/lib/client-auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -16,25 +14,29 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (getCurrentUser()) {
-      router.replace("/");
+      window.location.replace("/");
     }
-  }, [router]);
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
 
-    const result = mode === "login" ? loginUser(username, password) : createUser(username, password);
+    try {
+      const result = mode === "login" ? loginUser(username, password) : createUser(username, password);
 
-    if (!result.ok) {
-      setError(result.error || "Authentication failed.");
+      if (!result.ok) {
+        setError(result.error || "Authentication failed.");
+        return;
+      }
+
+      window.location.href = "/";
+    } catch {
+      setError("Authentication storage failed in this browser. Try disabling private mode.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -47,12 +49,14 @@ export default function LoginPage() {
 
         <div className="mb-4 flex gap-2 rounded-lg bg-slate-900 p-1">
           <button
+            type="button"
             onClick={() => setMode("login")}
             className={`flex-1 rounded-md px-3 py-2 text-sm ${mode === "login" ? "bg-accent text-slate-950" : "text-slate-300"}`}
           >
             Login
           </button>
           <button
+            type="button"
             onClick={() => setMode("signup")}
             className={`flex-1 rounded-md px-3 py-2 text-sm ${mode === "signup" ? "bg-accent text-slate-950" : "text-slate-300"}`}
           >
