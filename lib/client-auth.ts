@@ -19,7 +19,7 @@ function safeParse<T>(raw: string | null, fallback: T): T {
   }
 }
 
-function canUseLocalStorage(): boolean {
+export function hasPersistentStorage(): boolean {
   if (typeof window === "undefined") return false;
   try {
     const testKey = "askdocs_storage_test";
@@ -32,12 +32,12 @@ function canUseLocalStorage(): boolean {
 }
 
 function readUsers(): LocalUser[] {
-  if (!canUseLocalStorage()) return memoryUsers;
+  if (!hasPersistentStorage()) return memoryUsers;
   return safeParse<LocalUser[]>(window.localStorage.getItem(USERS_KEY), []);
 }
 
 function writeUsers(users: LocalUser[]): void {
-  if (!canUseLocalStorage()) {
+  if (!hasPersistentStorage()) {
     memoryUsers = users;
     return;
   }
@@ -45,12 +45,12 @@ function writeUsers(users: LocalUser[]): void {
 }
 
 function readCurrentUser(): string | null {
-  if (!canUseLocalStorage()) return memoryCurrentUser;
+  if (!hasPersistentStorage()) return memoryCurrentUser;
   return window.localStorage.getItem(CURRENT_USER_KEY);
 }
 
 function writeCurrentUser(username: string | null): void {
-  if (!canUseLocalStorage()) {
+  if (!hasPersistentStorage()) {
     memoryCurrentUser = username;
     return;
   }

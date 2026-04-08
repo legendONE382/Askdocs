@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FileUp, Loader2, SendHorizonal, Sparkles } from "lucide-react";
 
 import { getCurrentUser, logoutUser } from "@/lib/client-auth";
@@ -25,6 +26,7 @@ const quickActions = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [project, setProject] = useState("default");
   const [files, setFiles] = useState<FileList | null>(null);
   const [status, setStatus] = useState<string>("No files ingested yet.");
@@ -38,17 +40,18 @@ export default function HomePage() {
   useEffect(() => {
     const user = getCurrentUser();
     if (!user) {
-      window.location.replace("/login");
+      router.replace("/login");
       return;
     }
 
     setCurrentUser(user);
     setAuthReady(true);
-  }, []);
+  }, [router]);
 
   async function logout() {
     logoutUser();
-    window.location.href = "/login";
+    router.replace("/login");
+    router.refresh();
   }
 
   const fileNames = useMemo(() => {
