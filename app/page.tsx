@@ -39,13 +39,23 @@ export default function HomePage() {
 
   useEffect(() => {
     const user = getCurrentUser();
-    if (!user) {
-      router.replace("/login");
+    if (user) {
+      setCurrentUser(user);
+      setAuthReady(true);
       return;
     }
 
-    setCurrentUser(user);
-    setAuthReady(true);
+    const retry = window.setTimeout(() => {
+      const retryUser = getCurrentUser();
+      if (retryUser) {
+        setCurrentUser(retryUser);
+        setAuthReady(true);
+      } else {
+        router.replace("/login");
+      }
+    }, 250);
+
+    return () => window.clearTimeout(retry);
   }, [router]);
 
   async function logout() {

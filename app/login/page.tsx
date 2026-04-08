@@ -4,7 +4,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 
-import { createUser, getCurrentUser, loginUser } from "@/lib/client-auth";
+import { createUser, getCurrentUser, hasPersistentStorage, loginUser } from "@/lib/client-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,8 +32,12 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/");
-      router.refresh();
+      if (hasPersistentStorage()) {
+        window.location.assign("/");
+      } else {
+        router.replace("/");
+        router.refresh();
+      }
     } catch {
       setError("Authentication storage failed in this browser. Try disabling private mode.");
     } finally {
@@ -55,7 +59,14 @@ export default function LoginPage() {
             <button
               type="button"
               className="underline decoration-dotted"
-              onClick={() => router.replace("/")}
+              onClick={() => {
+                if (hasPersistentStorage()) {
+                  window.location.assign("/");
+                } else {
+                  router.replace("/");
+                  router.refresh();
+                }
+              }}
             >
               Continue to app
             </button>
