@@ -1,24 +1,22 @@
-# AskDocs (Vercel + Mistral)
+# AskDocs
 
-AskDocs is a document analysis app built with **Next.js App Router** and the **Mistral API**.
-Users can create a local account in-browser, upload documents, and chat with cited answers.
+AskDocs is a Next.js document Q&A application that lets users upload files, build semantic indexes, and chat with AI answers grounded in uploaded content.
 
-## What changed
+## Highlights
 
-- Authentication is now **local-first**: accounts are stored in browser `localStorage`.
-- Session is browser-local (`askdocs_current_user`) so users can sign up/login without server-side user setup.
-- Document vectors are still in server memory for now (demo behavior).
+- **Upload + Ingest:** PDF, DOCX, TXT, MD, CSV.
+- **RAG Chat:** Uses Mistral embeddings + chat completions.
+- **Source Snippets:** Answers include citation snippets from retrieved chunks.
+- **Local-First Auth:** Sign up/login is stored in the browser for a simple, backend-free demo flow.
 
-## Full app flow
+## Architecture (Demo)
 
-1. User opens `/login`.
-2. User can **Sign Up** or **Login**.
-3. Account/session is stored in local browser storage.
-4. User uploads docs and ingests them.
-5. User asks questions and gets RAG answers with citations.
-6. User logs out (local session removed).
+- **Frontend:** Next.js App Router (`app/page.tsx`, `app/login/page.tsx`).
+- **Ingestion API:** `POST /api/ingest` parses documents and stores vectors in memory.
+- **Chat API:** `POST /api/chat` retrieves top chunks and generates grounded responses.
+- **Vector Store:** In-memory (`lib/vector-store.ts`) for demonstration.
 
-## Local run
+## Run locally
 
 ```bash
 npm install
@@ -27,14 +25,24 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Environment variables
+Then open: `http://localhost:3000`
 
-- `MISTRAL_API_KEY` (required)
-- `MISTRAL_CHAT_MODEL` (optional, default: `open-mistral-nemo`)
-- `MISTRAL_EMBED_MODEL` (optional, default: `mistral-embed`)
+## Required environment variables
 
-## Notes
+- `MISTRAL_API_KEY`
 
-- Current user accounts are local to each browser/device.
-- Vector memory is ephemeral on serverless instances.
-- For production durable state, add a real DB + vector store.
+Optional:
+- `MISTRAL_CHAT_MODEL` (default: `open-mistral-nemo`)
+- `MISTRAL_EMBED_MODEL` (default: `mistral-embed`)
+
+## Auth model (important)
+
+User accounts and session state are stored on the client (browser storage). This is intentional for demo simplicity.
+
+## Production notes
+
+For production use, replace:
+
+- Browser-local auth with real server auth (e.g., NextAuth/Auth.js + DB)
+- In-memory vectors with persistent storage (pgvector/Pinecone/Qdrant/Weaviate)
+- In-memory rate limits with distributed rate limiting
