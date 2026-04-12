@@ -18,6 +18,10 @@ export default function LoginPage() {
     setExistingSessionUser(getCurrentUser());
   }, []);
 
+  function openAppHome() {
+    window.location.replace(`${window.location.origin}/`);
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -51,16 +55,23 @@ export default function LoginPage() {
 
         {existingSessionUser ? (
           <div className="mb-4 rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm text-slate-300">
-            Session detected for <span className="font-medium text-slate-100">{existingSessionUser}</span>.{" "}
-            <a href="/" className="underline decoration-dotted">
+            Session detected for <span className="font-medium text-slate-100">{existingSessionUser}</span>.
+            <button
+              type="button"
+              onClick={openAppHome}
+              className="mt-2 block text-left underline decoration-dotted"
+            >
               Continue to app
-            </a>
+            </button>
           </div>
         ) : null}
 
         {authSuccess ? (
           <div className="mb-4 rounded-xl border border-emerald-700 bg-emerald-950/30 p-3 text-sm text-emerald-200">
-            Success! Your session is ready. <a href="/" className="underline">Open AskDocs</a>
+            <p>Success! Your session is ready.</p>
+            <button type="button" onClick={openAppHome} className="mt-2 underline">
+              Open AskDocs
+            </button>
           </div>
         ) : null}
 
