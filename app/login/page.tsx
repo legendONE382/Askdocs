@@ -1,19 +1,18 @@
 "use client";
 
 import { type FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 
-import { createUser, getCurrentUser, hasPersistentStorage, loginUser } from "@/lib/client-auth";
+import { createUser, getCurrentUser, loginUser } from "@/lib/client-auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [existingSessionUser, setExistingSessionUser] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState(false);
 
   useEffect(() => {
     setExistingSessionUser(getCurrentUser());
@@ -23,6 +22,7 @@ export default function LoginPage() {
     event.preventDefault();
     setLoading(true);
     setError("");
+    setAuthSuccess(false);
 
     try {
       const result = mode === "login" ? loginUser(username, password) : createUser(username, password);
@@ -32,12 +32,8 @@ export default function LoginPage() {
         return;
       }
 
-      if (hasPersistentStorage()) {
-        window.location.assign("/");
-      } else {
-        router.replace("/");
-        router.refresh();
-      }
+      setExistingSessionUser(getCurrentUser());
+      setAuthSuccess(true);
     } catch {
       setError("Authentication storage failed in this browser. Try disabling private mode.");
     } finally {
@@ -56,20 +52,15 @@ export default function LoginPage() {
         {existingSessionUser ? (
           <div className="mb-4 rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-sm text-slate-300">
             Session detected for <span className="font-medium text-slate-100">{existingSessionUser}</span>.{" "}
-            <button
-              type="button"
-              className="underline decoration-dotted"
-              onClick={() => {
-                if (hasPersistentStorage()) {
-                  window.location.assign("/");
-                } else {
-                  router.replace("/");
-                  router.refresh();
-                }
-              }}
-            >
+            <a href="/" className="underline decoration-dotted">
               Continue to app
-            </button>
+            </a>
+          </div>
+        ) : null}
+
+        {authSuccess ? (
+          <div className="mb-4 rounded-xl border border-emerald-700 bg-emerald-950/30 p-3 text-sm text-emerald-200">
+            Success! Your session is ready. <a href="/" className="underline">Open AskDocs</a>
           </div>
         ) : null}
 
