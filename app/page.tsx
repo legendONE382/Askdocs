@@ -1,20 +1,18 @@
-import Link from "next/link";
-
-export default function LandingPage() {
+export default function HomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-6 p-6 text-center">
       <h1 className="text-4xl font-semibold">AskDocs</h1>
       <p className="text-slate-300">
-        Upload documents, build semantic indexes, and chat with AI answers grounded in your content.
+        Rebuilt as a clean slate with no authentication and no API routes.
       </p>
-      <div className="flex gap-3">
-        <Link href="/login" className="rounded-xl border border-slate-600 px-4 py-2 text-sm hover:border-accent">
-          Login / Sign Up
-        </Link>
-        <Link href="/app" className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-slate-950">
-          Open App Workspace
-        </Link>
-      </div>
+      <section className="panel w-full max-w-xl p-6 text-left">
+        <h2 className="mb-3 text-lg font-semibold">What changed</h2>
+        <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
+          <li>Removed all login and signup logic.</li>
+          <li>Removed the previous app and API route implementations.</li>
+          <li>Kept a single, simple homepage to start rebuilding from scratch.</li>
+        </ul>
+      </section>
     </main>
   );
 }
