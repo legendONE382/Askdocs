@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { login } from "@/lib/auth";
+import { signUp } from "@/lib/auth";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,9 +19,15 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const result = await login(username, password);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
+    const result = await signUp(username, password);
     if (!result.ok) {
-      setError(result.error || "Login failed.");
+      setError(result.error || "Sign up failed.");
       setLoading(false);
       return;
     }
@@ -31,7 +38,7 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md items-center p-6">
       <section className="panel w-full p-6">
-        <h1 className="mb-4 text-2xl font-semibold">Login</h1>
+        <h1 className="mb-4 text-2xl font-semibold">Create account</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <input
             value={username}
@@ -46,7 +53,16 @@ export default function LoginPage() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Password"
-            autoComplete="current-password"
+            autoComplete="new-password"
+            className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
+            required
+          />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            placeholder="Confirm password"
+            autoComplete="new-password"
             className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
             required
           />
@@ -56,12 +72,12 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-accent px-4 py-2 font-medium text-slate-950 disabled:opacity-70"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
         <p className="mt-4 text-sm text-slate-400">
-          Don&apos;t have an account? <Link href="/signup" className="underline">Create one</Link>
+          Already have an account? <Link href="/login" className="underline">Login</Link>
         </p>
       </section>
     </main>

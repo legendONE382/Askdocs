@@ -1,14 +1,20 @@
 # AskDocs
 
-This project has been reset to a clean baseline.
+AskDocs now includes a fresh authentication foundation with dedicated login, signup, and protected workspace routes.
 
-## Current state
+## Routes
 
-- No authentication logic
-- No `/login` route
-- No `/app` workspace route
-- No API routes
-- Single route: `/`
+- `/` — Landing page
+- `/login` — Sign in page
+- `/signup` — Create account page
+- `/workspace` — Protected app route (requires active session)
+
+## Auth behavior
+
+- Accounts are stored in browser `localStorage`.
+- Passwords are hashed in-browser using `crypto.subtle` (SHA-256) before storage.
+- Session state is tracked in `localStorage`.
+- Unauthenticated access to `/workspace` redirects to `/login`.
 
 ## Run locally
 

@@ -1,88 +1,108 @@
-const COOKIE_NAME = "askdocs_session";
-const SESSION_TTL_SECONDS = 60 * 60 * 12;
+"use client";
 
-function getSecret(): string {
-  const secret = process.env.APP_AUTH_SECRET || "";
-  if (process.env.NODE_ENV === "production" && secret.length < 32) {
-    throw new Error("APP_AUTH_SECRET must be set to a strong value in production.");
-  }
-  return secret || "dev-only-insecure-secret-change-me";
+const USERS_KEY = "askdocs_users_v2";
+const SESSION_KEY = "askdocs_session_v2";
+
+export type StoredUser = {
+  username: string;
+  passwordHash: string;
+  createdAt: string;
+};
+
+type AuthResult = {
+  ok: boolean;
+  error?: string;
+};
+
+function normalizeUsername(value: string) {
+  return value.trim().toLowerCase();
 }
 
-function base64urlEncode(input: string): string {
-  return Buffer.from(input, "utf8").toString("base64url");
+function isPasswordStrong(password: string) {
+  return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 }
 
-function base64urlDecode(input: string): string {
-  return Buffer.from(input, "base64url").toString("utf8");
-}
-
-async function sign(input: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(getSecret()),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(input));
-  return Buffer.from(signature).toString("base64url");
-}
-
-function timingSafeStringEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i += 1) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
-}
-
-export async function createSessionToken(username: string): Promise<string> {
-  const payload = {
-    sub: username,
-    exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS
-  };
-  const encoded = base64urlEncode(JSON.stringify(payload));
-  const signature = await sign(encoded);
-  return `${encoded}.${signature}`;
-}
-
-export async function verifySessionToken(token?: string): Promise<{ valid: boolean; user?: string }> {
-  if (!token || !token.includes(".")) return { valid: false };
-  const [encoded, signature] = token.split(".");
-  if (!encoded || !signature) return { valid: false };
-
-  const expected = await sign(encoded);
-  if (!timingSafeStringEqual(signature, expected)) return { valid: false };
+function getUsers(): StoredUser[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(USERS_KEY);
+  if (!raw) return [];
 
   try {
-    const payload = JSON.parse(base64urlDecode(encoded)) as { sub: string; exp: number };
-    if (!payload.sub || !payload.exp || payload.exp < Math.floor(Date.now() / 1000)) {
-      return { valid: false };
-    }
-    return { valid: true, user: payload.sub };
+    const parsed = JSON.parse(raw) as StoredUser[];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return { valid: false };
+    return [];
   }
 }
 
-export function getCookieName(): string {
-  return COOKIE_NAME;
+function saveUsers(users: StoredUser[]) {
+  window.localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
-export function getSessionTtl(): number {
-  return SESSION_TTL_SECONDS;
+async function hashPassword(password: string) {
+  const bytes = new TextEncoder().encode(password);
+  const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((n) => n.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-export function getCredentials() {
-  const username = process.env.APP_LOGIN_USER || "admin";
-  const password = process.env.APP_LOGIN_PASSWORD || "admin123";
+export function getCurrentUser() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(SESSION_KEY);
+}
 
-  if (process.env.NODE_ENV === "production" && password === "admin123") {
-    throw new Error("APP_LOGIN_PASSWORD must be changed in production.");
+export function logout() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(SESSION_KEY);
+}
+
+export async function signUp(username: string, password: string): Promise<AuthResult> {
+  const normalizedUsername = normalizeUsername(username);
+
+  if (normalizedUsername.length < 3) {
+    return { ok: false, error: "Username must be at least 3 characters." };
   }
 
-  return { username, password };
+  if (!isPasswordStrong(password)) {
+    return {
+      ok: false,
+      error: "Password must be at least 8 characters and include letters and numbers."
+    };
+  }
+
+  const users = getUsers();
+
+  if (users.some((entry) => entry.username === normalizedUsername)) {
+    return { ok: false, error: "Username already exists." };
+  }
+
+  const passwordHash = await hashPassword(password);
+  users.push({
+    username: normalizedUsername,
+    passwordHash,
+    createdAt: new Date().toISOString()
+  });
+  saveUsers(users);
+  window.localStorage.setItem(SESSION_KEY, normalizedUsername);
+
+  return { ok: true };
+}
+
+export async function login(username: string, password: string): Promise<AuthResult> {
+  const normalizedUsername = normalizeUsername(username);
+  const users = getUsers();
+
+  const account = users.find((entry) => entry.username === normalizedUsername);
+  if (!account) {
+    return { ok: false, error: "No account found for this username." };
+  }
+
+  const providedHash = await hashPassword(password);
+  if (providedHash !== account.passwordHash) {
+    return { ok: false, error: "Invalid password." };
+  }
+
+  window.localStorage.setItem(SESSION_KEY, normalizedUsername);
+  return { ok: true };
 }
