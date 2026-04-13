@@ -19,7 +19,7 @@ export default function LoginPage() {
   }, []);
 
   function openAppHome() {
-    window.location.replace(`${window.location.origin}/`);
+    window.location.replace(`${window.location.origin}/app`);
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
