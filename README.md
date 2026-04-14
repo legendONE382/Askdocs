@@ -1,13 +1,13 @@
 # AskDocs
 
-AskDocs now includes a fresh authentication foundation with dedicated login, signup, and protected workspace routes.
+AskDocs includes local browser authentication and a protected main workspace where users can upload files, index them, and ask questions.
 
 ## Routes
 
-- `/` — Landing page
-- `/login` — Sign in page
-- `/signup` — Create account page
-- `/workspace` — Protected app route (requires active session)
+- `/` — Landing page (auto-redirects to `/workspace` when a session exists)
+- `/login` — Sign in page (auto-redirects to `/workspace` when already authenticated)
+- `/signup` — Create account page (auto-redirects to `/workspace` when already authenticated)
+- `/workspace` — Main app page with upload/index/chat UI (protected)
 
 ## Auth behavior
 

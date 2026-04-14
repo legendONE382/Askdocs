@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { signUp } from "@/lib/auth";
+import { getCurrentUser, signUp } from "@/lib/auth";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -13,6 +13,12 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (getCurrentUser()) {
+      router.replace("/workspace");
+    }
+  }, [router]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
