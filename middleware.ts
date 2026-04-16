@@ -1,6 +1,7 @@
-// Existing code
+// Other content above ...
 
-// After line 20 (after verifySessionToken call)
-console.log('Session token verified.');
-
-// Continue with existing code...
+// Assuming this is around line 20 where verifySessionToken is called:
+verifySessionToken(token);
+console.log("TOKEN:", token);
+console.log("SESSION:", session);
+// Other content below ...
