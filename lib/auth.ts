@@ -1,108 +1,50 @@
-"use client";
+import { serialize, parse } from 'cookie';
+import { SignJWT, jwtVerify } from 'jose';
 
-const USERS_KEY = "askdocs_users_v2";
-const SESSION_KEY = "askdocs_session_v2";
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const COOKIE_NAME = 'session_token';
+const SESSION_TTL = 24 * 60 * 60; // 1 day in seconds
 
-export type StoredUser = {
-  username: string;
-  passwordHash: string;
-  createdAt: string;
+export const getCookieName = () => COOKIE_NAME;
+export const getSessionTtl = () => SESSION_TTL;
+
+export const createSessionToken = async (userId) => {
+    const jwt = await new SignJWT({ userId })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime(SESSION_TTL)
+        .sign(SECRET);
+    return serialize(COOKIE_NAME, jwt, { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 };
 
-type AuthResult = {
-  ok: boolean;
-  error?: string;
+export const verifySessionToken = async (token) => {
+    try {
+        const { payload } = await jwtVerify(token, SECRET);
+        return payload;
+    } catch (err) {
+        return null;
+    }
 };
 
-function normalizeUsername(value: string) {
-  return value.trim().toLowerCase();
-}
+// Client-side functions
+export const getCurrentUser = async (req) => {
+    const cookies = parse(req.headers.cookie || '');
+    const token = cookies[COOKIE_NAME];
+    if (!token) return null;
+    return await verifySessionToken(token);
+};
 
-function isPasswordStrong(password: string) {
-  return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
-}
+export const login = async (req, res, userId) => {
+    const token = await createSessionToken(userId);
+    res.setHeader('Set-Cookie', token);
+    res.status(200).json({ message: 'Logged in' });
+};
 
-function getUsers(): StoredUser[] {
-  if (typeof window === "undefined") return [];
-  const raw = window.localStorage.getItem(USERS_KEY);
-  if (!raw) return [];
+export const logout = (res) => {
+    res.setHeader('Set-Cookie', serialize(COOKIE_NAME, '', { path: '/', httpOnly: true, expires: new Date(0) }));
+    res.status(200).json({ message: 'Logged out' });
+};
 
-  try {
-    const parsed = JSON.parse(raw) as StoredUser[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(users: StoredUser[]) {
-  window.localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-async function hashPassword(password: string) {
-  const bytes = new TextEncoder().encode(password);
-  const digest = await window.crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest))
-    .map((n) => n.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-export function getCurrentUser() {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(SESSION_KEY);
-}
-
-export function logout() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(SESSION_KEY);
-}
-
-export async function signUp(username: string, password: string): Promise<AuthResult> {
-  const normalizedUsername = normalizeUsername(username);
-
-  if (normalizedUsername.length < 3) {
-    return { ok: false, error: "Username must be at least 3 characters." };
-  }
-
-  if (!isPasswordStrong(password)) {
-    return {
-      ok: false,
-      error: "Password must be at least 8 characters and include letters and numbers."
-    };
-  }
-
-  const users = getUsers();
-
-  if (users.some((entry) => entry.username === normalizedUsername)) {
-    return { ok: false, error: "Username already exists." };
-  }
-
-  const passwordHash = await hashPassword(password);
-  users.push({
-    username: normalizedUsername,
-    passwordHash,
-    createdAt: new Date().toISOString()
-  });
-  saveUsers(users);
-  window.localStorage.setItem(SESSION_KEY, normalizedUsername);
-
-  return { ok: true };
-}
-
-export async function login(username: string, password: string): Promise<AuthResult> {
-  const normalizedUsername = normalizeUsername(username);
-  const users = getUsers();
-
-  const account = users.find((entry) => entry.username === normalizedUsername);
-  if (!account) {
-    return { ok: false, error: "No account found for this username." };
-  }
-
-  const providedHash = await hashPassword(password);
-  if (providedHash !== account.passwordHash) {
-    return { ok: false, error: "Invalid password." };
-  }
-
-  window.localStorage.setItem(SESSION_KEY, normalizedUsername);
-  return { ok: true };
-}
+export const signUp = async (userData) => {
+    // Handle user registration logic here, e.g. saving to database
+};
