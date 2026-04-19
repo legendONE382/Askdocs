@@ -1,43 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getCookieName, verifySessionToken } from "@/lib/auth";
+import { getCookieName, verifySessionToken } from "@/lib/auth-server";
 
-const PUBLIC_PATHS = new Set(["/login", "/api/auth/login", "/api/auth/logout"]);
-
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/public") ||
-    PUBLIC_PATHS.has(pathname)
-  ) {
-    return NextResponse.next();
-  }
-
+function isAuthenticated(request: NextRequest) {
   const token = request.cookies.get(getCookieName())?.value;
-  const session = await verifySessionToken(token);
+  const session = verifySessionToken(token);
+  return session.valid;
+}
 
-  if (pathname === "/login" && session.valid) {
-    return NextResponse.redirect(new URL("/", request.url));
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const loggedIn = isAuthenticated(request);
+
+  if (pathname.startsWith("/workspace") && !loggedIn) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("reason", "session-expired");
+    return NextResponse.redirect(loginUrl);
   }
 
-  if (!session.valid) {
-    if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const loginUrl = new URL("/login", request.url);
-    if (pathname !== "/") {
-      loginUrl.searchParams.set("next", pathname);
-    }
-    return NextResponse.redirect(loginUrl);
+  if ((pathname.startsWith("/login") || pathname.startsWith("/signup")) && loggedIn) {
+    return NextResponse.redirect(new URL("/workspace", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/workspace/:path*"]
+  matcher: ["/workspace/:path*", "/login", "/signup"]
 };

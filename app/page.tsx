@@ -4,22 +4,27 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { getCurrentUser } from "@/lib/auth";
+import { fetchSession } from "@/lib/auth-client";
 
 export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (getCurrentUser()) {
-      router.replace("/workspace");
+    async function checkSession() {
+      const session = await fetchSession();
+      if (session.ok) {
+        router.replace("/workspace");
+      }
     }
+
+    checkSession();
   }, [router]);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center gap-8 p-6 text-center">
       <h1 className="text-4xl font-semibold">AskDocs</h1>
       <p className="max-w-2xl text-slate-300">
-        Upload documents, index content, and chat in your protected workspace.
+        Upload documents, build search-ready context, and chat with your files in a secure workspace.
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-3">

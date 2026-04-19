@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { getCurrentUser, signUp } from "@/lib/auth";
+import { fetchSession } from "@/lib/auth-client";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -13,11 +13,21 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (getCurrentUser()) {
-      router.replace("/workspace");
+    async function checkSession() {
+      const session = await fetchSession();
+      if (session.ok) {
+        setRedirecting(true);
+        setTimeout(() => router.replace("/workspace"), 220);
+        return;
+      }
+      setCheckingSession(false);
     }
+
+    checkSession();
   }, [router]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -31,14 +41,35 @@ export default function SignUpPage() {
       return;
     }
 
-    const result = await signUp(username, password);
-    if (!result.ok) {
-      setError(result.error || "Sign up failed.");
+    const result = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = (await result.json()) as { ok: boolean; error?: string };
+
+    if (!result.ok || !data.ok) {
+      setError(data.error || "Sign up failed.");
       setLoading(false);
       return;
     }
 
-    router.replace("/workspace");
+    setRedirecting(true);
+    setTimeout(() => router.replace("/workspace"), 220);
+  }
+
+  if (checkingSession || redirecting) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-md items-center justify-center p-6">
+        <section className="panel w-full p-6 text-center">
+          <p className="text-sm text-slate-300">{redirecting ? "Redirecting to dashboard..." : "Checking session..."}</p>
+          <div className="mt-4 h-1 w-full overflow-hidden rounded bg-slate-700">
+            <div className="h-full w-1/2 animate-pulse rounded bg-accent" />
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (

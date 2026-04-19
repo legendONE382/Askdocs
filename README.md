@@ -1,20 +1,24 @@
 # AskDocs
 
-AskDocs includes local browser authentication and a protected main workspace where users can upload files, index them, and ask questions.
+AskDocs now uses a production-style cookie session flow with middleware-protected routes.
 
 ## Routes
 
-- `/` — Landing page (auto-redirects to `/workspace` when a session exists)
-- `/login` — Sign in page (auto-redirects to `/workspace` when already authenticated)
-- `/signup` — Create account page (auto-redirects to `/workspace` when already authenticated)
-- `/workspace` — Main app page with upload/index/chat UI (protected)
+- `/` — Landing page (checks session and redirects to workspace)
+- `/login` — Login form (handles session-expired banner + redirect animation)
+- `/signup` — Account creation form
+- `/workspace` — Main dashboard with upload/index/chat UI (protected)
+- `/api/auth/login` — Server login + secure cookie set
+- `/api/auth/signup` — Server signup + secure cookie set
+- `/api/auth/session` — Session validation endpoint
+- `/api/auth/logout` — Session revoke endpoint
 
-## Auth behavior
+## Auth architecture
 
-- Accounts are stored in browser `localStorage`.
-- Passwords are hashed in-browser using `crypto.subtle` (SHA-256) before storage.
-- Session state is tracked in `localStorage`.
-- Unauthenticated access to `/workspace` redirects to `/login`.
+- Sessions are stored in secure, HTTP-only cookies.
+- Middleware validates cookies for `/workspace` and redirects unauthenticated users.
+- Login/signup are server API calls that set session cookies.
+- Session expiry redirects users to `/login?reason=session-expired`.
 
 ## Run locally
 
