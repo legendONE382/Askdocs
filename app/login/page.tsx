@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 import { fetchSession } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,14 +15,13 @@ export default function LoginPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
 
-  const sessionMessage = useMemo(() => {
-    if (searchParams.get("reason") === "session-expired") {
-      return "Your session expired. Please sign in again.";
-    }
-    return "";
-  }, [searchParams]);
+  const [sessionMessage, setSessionMessage] = useState("");
 
   useEffect(() => {
+    if (window.location.search.includes("reason=session-expired")) {
+      setSessionMessage("Your session expired. Please sign in again.");
+    }
+
     async function checkSession() {
       const session = await fetchSession();
       if (session.ok) {

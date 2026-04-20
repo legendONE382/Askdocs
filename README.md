@@ -1,30 +1,50 @@
 # AskDocs
 
-AskDocs now uses a production-style cookie session flow with middleware-protected routes.
+AskDocs is a document Q&A demo experience designed for presentations and rapid prototyping.
 
-## Routes
+## Overview
 
-- `/` — Landing page (checks session and redirects to workspace)
-- `/login` — Login form (handles session-expired banner + redirect animation)
-- `/signup` — Account creation form
-- `/workspace` — Main dashboard with upload/index/chat UI (protected)
-- `/api/auth/login` — Server login + secure cookie set
-- `/api/auth/signup` — Server signup + secure cookie set
-- `/api/auth/session` — Session validation endpoint
-- `/api/auth/logout` — Session revoke endpoint
+The app opens directly to the main workspace so presenters can immediately:
 
-## Auth architecture
+- Upload one or more documents
+- Simulate indexing of uploaded files
+- Ask questions in a chat-style interface
+- Demonstrate a clean dashboard UX for a future RAG pipeline
 
-- Sessions are stored in secure, HTTP-only cookies.
-- Middleware validates cookies for `/workspace` and redirects unauthenticated users.
-- Login/signup are server API calls that set session cookies.
-- Session expiry redirects users to `/login?reason=session-expired`.
+> **Current demo mode:** authentication is intentionally paused for presentation simplicity.
 
-## Run locally
+## Demo Routes
+
+- `/` → Main application workspace (default entry)
+- `/workspace` → Same main workspace (alias route)
+
+## Product Highlights
+
+- **Professional dashboard layout** with clear left-panel controls and right-panel conversation area
+- **Multi-file upload input** with immediate file list feedback
+- **Indexing status flow** that mimics production ingestion lifecycle
+- **Quick action prompts** for common document-analysis questions
+- **Chat transcript panel** for user and assistant message flow
+
+## Tech Stack
+
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **UI:** React + Tailwind CSS
+- **Icons:** lucide-react
+
+## Run Locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open `http://localhost:3000`.
+Open: `http://localhost:3000`
+
+## Next Planned Upgrades
+
+- Re-enable authentication (server sessions)
+- Connect real document ingestion APIs
+- Add vector search + grounded response citations
+- Add persistent storage for projects and chat history
