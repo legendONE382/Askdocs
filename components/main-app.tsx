@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileUp, Loader2, SendHorizonal, Sparkles } from "lucide-react";
+import { FileUp, Loader2, LogOut, SendHorizonal, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Message = {
   role: "user" | "assistant";
@@ -14,8 +15,9 @@ const quickActions = [
   "What risks should I review first?"
 ];
 
-export default function MainApp() {
-  const [project, setProject] = useState("presentation-demo");
+export default function MainApp({ username }: { username: string }) {
+  const router = useRouter();
+  const [project, setProject] = useState("default-workspace");
   const [files, setFiles] = useState<FileList | null>(null);
   const [status, setStatus] = useState("No files uploaded yet.");
   const [ingesting, setIngesting] = useState(false);
@@ -29,6 +31,12 @@ export default function MainApp() {
       .map((file) => file.name)
       .join(", ");
   }, [files]);
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  }
 
   async function ingestFiles() {
     if (!files?.length) {
@@ -57,7 +65,7 @@ export default function MainApp() {
     const reply = files?.length
       ? `I found ${files.length} uploaded file(s): ${Array.from(files)
           .map((file) => file.name)
-          .join(", ")}. Connect the ingestion/chat API for grounded results.`
+          .join(", ")}. Connect the ingestion/chat API for grounded answers with citations.`
       : "Upload and index at least one file first so I can answer against your docs.";
 
     setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
@@ -67,15 +75,17 @@ export default function MainApp() {
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 p-6 lg:flex-row">
       <aside className="panel h-fit w-full space-y-5 p-5 lg:sticky lg:top-6 lg:w-[360px]">
-        <div>
-          <h1 className="text-2xl font-semibold">AskDocs</h1>
-          <p className="mt-1 text-sm text-slate-300">Presentation mode · auth paused</p>
-        </div>
-
-        <div className="grid gap-3 rounded-xl border border-slate-700 bg-slate-900/50 p-3 text-xs text-slate-300">
-          <p><span className="text-slate-100">Plan:</span> Demo</p>
-          <p><span className="text-slate-100">Mode:</span> Open access</p>
-          <p><span className="text-slate-100">State:</span> Ready for upload + Q&A</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold">AskDocs</h1>
+            <p className="mt-1 text-sm text-slate-300">Signed in as {username}</p>
+          </div>
+          <button
+            onClick={logout}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-600 px-2 py-1 text-xs text-slate-200 hover:border-rose-400"
+          >
+            <LogOut size={14} /> Logout
+          </button>
         </div>
 
         <label className="block text-sm font-medium text-slate-200">Project workspace</label>
@@ -83,7 +93,7 @@ export default function MainApp() {
           value={project}
           onChange={(event) => setProject(event.target.value)}
           className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-accent"
-          placeholder="presentation-demo"
+          placeholder="default-workspace"
         />
 
         <div className="rounded-xl border border-dashed border-slate-500 p-4">
@@ -128,7 +138,7 @@ export default function MainApp() {
         <div className="mb-4 flex-1 space-y-4 overflow-y-auto rounded-xl bg-slate-950/60 p-4">
           {messages.length === 0 ? (
             <p className="text-sm text-slate-400">
-              Upload + index your files, then ask questions. This dashboard is ready for API integration.
+              Upload + index your files, then ask questions. This workspace is ready for your ingestion and RAG API wiring.
             </p>
           ) : (
             messages.map((message, index) => (

@@ -1,39 +1,35 @@
 # AskDocs
 
-AskDocs is a document Q&A demo experience designed for presentations and rapid prototyping.
+AskDocs is a Next.js document Q&A application scaffold where users can sign up, sign in, open a protected workspace, upload documents, and interact with a chat-style interface for grounded answers.
 
-## Overview
+## Highlights
 
-The app opens directly to the main workspace so presenters can immediately:
+- **Authentication Flow:** Username/password sign up + login with HTTP-only session cookies.
+- **Protected App Route:** `/workspace` is gated and redirects to `/login` if session is missing/expired.
+- **Document UX:** Multi-file upload input for PDF, DOCX, TXT, MD, and CSV.
+- **RAG-Ready Chat UI:** Chat panel + quick prompts for document-analysis interactions.
+- **Deployment-Ready:** Built with Next.js App Router and designed to run on Vercel.
 
-- Upload one or more documents
-- Simulate indexing of uploaded files
-- Ask questions in a chat-style interface
-- Demonstrate a clean dashboard UX for a future RAG pipeline
+## Routes
 
-> **Current demo mode:** authentication is intentionally paused for presentation simplicity.
+- `/` → Smart entry point (redirects to `/workspace` when authenticated, else `/login`)
+- `/login` → Sign in page
+- `/signup` → Create account page
+- `/workspace` → Main AskDocs interface (protected)
 
-## Demo Routes
+## Authentication Architecture
 
-- `/` → Main application workspace (default entry)
-- `/workspace` → Same main workspace (alias route)
+- API routes:
+  - `POST /api/auth/signup`
+  - `POST /api/auth/login`
+  - `GET /api/auth/session`
+  - `POST /api/auth/logout`
+- Sessions are stored in an in-memory server store and linked by an HTTP-only cookie (`askdocs_session`).
+- Session expiration is enforced server-side.
 
-## Product Highlights
+> Note: In-memory auth is suitable for demo/prototype environments. For production, replace with a persistent database-backed user/session store.
 
-- **Professional dashboard layout** with clear left-panel controls and right-panel conversation area
-- **Multi-file upload input** with immediate file list feedback
-- **Indexing status flow** that mimics production ingestion lifecycle
-- **Quick action prompts** for common document-analysis questions
-- **Chat transcript panel** for user and assistant message flow
-
-## Tech Stack
-
-- **Framework:** Next.js (App Router)
-- **Language:** TypeScript
-- **UI:** React + Tailwind CSS
-- **Icons:** lucide-react
-
-## Run Locally
+## Local Development
 
 ```bash
 npm install
@@ -42,9 +38,8 @@ npm run dev
 
 Open: `http://localhost:3000`
 
-## Next Planned Upgrades
+## Production Notes
 
-- Re-enable authentication (server sessions)
-- Connect real document ingestion APIs
-- Add vector search + grounded response citations
-- Add persistent storage for projects and chat history
+- Set `NODE_ENV=production` in deployment environments (Vercel does this automatically).
+- Session cookie is marked `secure` in production.
+- Replace prototype ingestion/chat simulation with real RAG endpoints for embeddings, retrieval, and cited answers.
