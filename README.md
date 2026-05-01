@@ -24,10 +24,11 @@ AskDocs is a Next.js document Q&A application scaffold where users can sign up, 
   - `POST /api/auth/login`
   - `GET /api/auth/session`
   - `POST /api/auth/logout`
-- Sessions are stored in an in-memory server store and linked by an HTTP-only cookie (`askdocs_session`).
-- Session expiration is enforced server-side.
+- Sessions are stateless signed tokens stored in an HTTP-only cookie (`askdocs_session`).
+- Session expiration is enforced server-side based on token payload.
+- Signup/login are demo-mode credential gates (no persistent user database yet).
 
-> Note: In-memory auth is suitable for demo/prototype environments. For production, replace with a persistent database-backed user/session store.
+> Note: This eliminates Vercel serverless memory issues. For production, replace with a persistent database-backed user/session store and real credential verification.
 
 ## Local Development
 
