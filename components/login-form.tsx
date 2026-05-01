@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
 export default function LoginForm() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,6 +25,7 @@ export default function LoginForm() {
     try {
       const result = await fetch("/api/auth/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
       });
@@ -38,8 +37,7 @@ export default function LoginForm() {
         return;
       }
 
-      router.replace("/workspace");
-      router.refresh();
+      window.location.href = "/workspace";
     } catch {
       setError("Unable to sign in right now. Please try again.");
     } finally {
