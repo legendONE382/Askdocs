@@ -19,6 +19,7 @@ AskDocs is a Next.js document Q&A application scaffold where users can sign up, 
 
 ## Authentication Architecture
 
+
 - API routes:
   - `POST /api/auth/signup`
   - `POST /api/auth/login`
