@@ -12,13 +12,12 @@ AskDocs is a Next.js document Q&A application scaffold where users can sign up, 
 
 ## Routes
 
-- `/` → Smart entry point (redirects to `/workspace` when authenticated, else `/login`)
+- `/` → Public landing page that explains AskDocs and links to auth/workspace
 - `/login` → Sign in page
 - `/signup` → Create account page
 - `/workspace` → Main AskDocs interface (protected)
 
 ## Authentication Architecture
-
 
 - API routes:
   - `POST /api/auth/signup`
