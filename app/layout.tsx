@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AskDocs",
-  description: "Analyze documents with Mistral-powered RAG and ask grounded questions."
+  title: "AskDocs | AI Document Answers",
+  description: "AskDocs by Estech Solutions turns uploaded documents into fast, grounded AI answers for teams."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
