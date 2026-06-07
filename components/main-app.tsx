@@ -4,9 +4,23 @@ import { useMemo, useState } from "react";
 import { FileUp, Loader2, LogOut, SendHorizonal, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+type Citation = {
+  source: string;
+  snippet: string;
+  chunkIndex: number;
+};
+
+type DocumentChunk = {
+  id: string;
+  source: string;
+  text: string;
+  chunkIndex: number;
+};
+
 type Message = {
   role: "user" | "assistant";
   content: string;
+  citations?: Citation[];
 };
 
 const quickActions = [
@@ -19,6 +33,7 @@ export default function MainApp({ username }: { username: string }) {
   const router = useRouter();
   const [project, setProject] = useState("default-workspace");
   const [files, setFiles] = useState<FileList | null>(null);
+  const [chunks, setChunks] = useState<DocumentChunk[]>([]);
   const [status, setStatus] = useState("No files uploaded yet.");
   const [ingesting, setIngesting] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -45,31 +60,81 @@ export default function MainApp({ username }: { username: string }) {
     }
 
     setIngesting(true);
-    setStatus("Indexing files...");
+    setStatus("Reading and indexing your document text...");
+    setChunks([]);
 
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    const formData = new FormData();
+    formData.append("project", project);
+    Array.from(files).forEach((file) => formData.append("files", file));
 
-    setStatus(`Indexed ${files.length} file(s) for project "${project}".`);
-    setIngesting(false);
+    try {
+      const response = await fetch("/api/documents/ingest", {
+        method: "POST",
+        body: formData
+      });
+      const data = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        chunks?: DocumentChunk[];
+        parsedFiles?: Array<{ source: string; chunks: number }>;
+      };
+
+      if (!response.ok || !data.ok || !data.chunks?.length) {
+        setStatus(data.error || "Unable to index those documents.");
+        return;
+      }
+
+      setChunks(data.chunks);
+      const fileSummary = data.parsedFiles?.map((file) => `${file.source}: ${file.chunks} chunks`).join("; ");
+      setStatus(`Indexed ${data.chunks.length} searchable chunks for "${project}". ${fileSummary ?? ""}`);
+    } catch {
+      setStatus("Indexing failed. Please try a smaller supported file.");
+    } finally {
+      setIngesting(false);
+    }
   }
 
   async function ask(question: string) {
-    if (!question.trim()) return;
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion || chatting) return;
 
-    setMessages((prev) => [...prev, { role: "user", content: question }]);
+    setMessages((prev) => [...prev, { role: "user", content: trimmedQuestion }]);
     setPrompt("");
+
+    if (!chunks.length) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Please upload and index documents first, then I can answer from their content." }
+      ]);
+      return;
+    }
+
     setChatting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const response = await fetch("/api/documents/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: trimmedQuestion, chunks })
+      });
+      const data = (await response.json()) as { ok: boolean; error?: string; answer?: string; citations?: Citation[] };
 
-    const reply = files?.length
-      ? `I found ${files.length} uploaded file(s): ${Array.from(files)
-          .map((file) => file.name)
-          .join(", ")}. Connect the ingestion/chat API for grounded answers with citations.`
-      : "Upload and index at least one file first so I can answer against your docs.";
-
-    setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-    setChatting(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.ok && data.answer ? data.answer : data.error || "I could not answer from the indexed documents.",
+          citations: data.citations
+        }
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "The document chat request failed. Please try again." }
+      ]);
+    } finally {
+      setChatting(false);
+    }
   }
 
   return (
@@ -104,7 +169,11 @@ export default function MainApp({ username }: { username: string }) {
             type="file"
             multiple
             accept=".pdf,.docx,.txt,.md,.csv"
-            onChange={(event) => setFiles(event.target.files)}
+            onChange={(event) => {
+              setFiles(event.target.files);
+              setChunks([]);
+              setStatus("Files selected. Click Index Documents to read them.");
+            }}
             className="mt-3 w-full text-sm"
           />
           {fileNames ? <p className="mt-3 text-xs text-slate-400">{fileNames}</p> : null}
@@ -138,7 +207,7 @@ export default function MainApp({ username }: { username: string }) {
         <div className="mb-4 flex-1 space-y-4 overflow-y-auto rounded-xl bg-slate-950/60 p-4">
           {messages.length === 0 ? (
             <p className="text-sm text-slate-400">
-              Upload + index your files, then ask questions. This workspace is ready for your ingestion and RAG API wiring.
+              Upload + index your files, then ask questions. AskDocs will answer from indexed document text and show source snippets.
             </p>
           ) : (
             messages.map((message, index) => (
@@ -149,6 +218,18 @@ export default function MainApp({ username }: { username: string }) {
                 }`}
               >
                 <p className="whitespace-pre-wrap">{message.content}</p>
+                {message.citations?.length ? (
+                  <div className="mt-3 space-y-2 border-t border-slate-700 pt-3">
+                    {message.citations.map((citation) => (
+                      <div key={`${citation.source}-${citation.chunkIndex}`} className="rounded-lg bg-slate-900 p-2 text-xs text-slate-300">
+                        <p className="font-semibold text-slate-100">
+                          {citation.source} · chunk {citation.chunkIndex}
+                        </p>
+                        <p className="mt-1">{citation.snippet}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </article>
             ))
           )}
