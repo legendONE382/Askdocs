@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { embedTexts, generateAnswer } from "@/lib/mistral";
+import { embedTexts, generateAnswer } from "@/lib/gemini";
 import { searchChunks } from "@/lib/vector-store";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { AppError, LIMITS, safeErrorMessage, sanitizeProject } from "@/lib/security";
