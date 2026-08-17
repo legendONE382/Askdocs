@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       throw new AppError(`Question too long. Max ${LIMITS.maxQuestionLength} characters.`, 400, true);
     }
 
-    const [questionEmbedding] = await embedTexts([question]);
+    const [questionEmbedding] = await embedTexts([question], "RETRIEVAL_QUERY");
     const results = searchChunks(project, questionEmbedding, 5);
 
     if (!results.length) {

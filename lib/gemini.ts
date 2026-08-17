@@ -45,16 +45,15 @@ function hashEmbedding(text: string): number[] {
   return embedding;
 }
 
-function embeddingInput(text: string): string {
-  return `task: question answering | query: ${text}`;
-}
+type GeminiEmbeddingTaskType = "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY";
 
-async function embedText(text: string): Promise<number[]> {
+async function embedText(text: string, taskType: GeminiEmbeddingTaskType): Promise<number[]> {
   const response = await geminiFetch(GEMINI_EMBED_MODEL, "embedContent", {
     model: `models/${GEMINI_EMBED_MODEL}`,
     content: {
-      parts: [{ text: embeddingInput(text) }]
+      parts: [{ text }]
     },
+    taskType,
     outputDimensionality: 768
   });
 
@@ -67,14 +66,17 @@ async function embedText(text: string): Promise<number[]> {
   return data.embedding?.values ?? hashEmbedding(text);
 }
 
-export async function embedTexts(texts: string[]): Promise<number[][]> {
+export async function embedTexts(
+  texts: string[],
+  taskType: GeminiEmbeddingTaskType = "RETRIEVAL_DOCUMENT"
+): Promise<number[][]> {
   if (!getApiKey()) {
     console.warn("GEMINI_API_KEY is not configured. Falling back to local hash embeddings.");
     return texts.map((text) => hashEmbedding(text));
   }
 
   try {
-    return await Promise.all(texts.map((text) => embedText(text)));
+    return await Promise.all(texts.map((text) => embedText(text, taskType)));
   } catch (error) {
     console.error("Gemini embedding error:", error);
     return texts.map((text) => hashEmbedding(text));

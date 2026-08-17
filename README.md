@@ -51,4 +51,4 @@ The workspace now has working demo document analysis endpoints:
 
 - `POST /api/documents/ingest` parses uploaded PDF, DOCX, TXT, MD, and CSV files into searchable chunks.
 - `POST /api/documents/chat` retrieves relevant chunks and answers with source snippets.
-- If `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) is configured, chat responses use Gemini (`GEMINI_CHAT_MODEL`, default `gemini-3-flash-preview`); otherwise the app falls back to a local extractive answer using the indexed chunks. The legacy vector API also uses Gemini embeddings (`GEMINI_EMBED_MODEL`, default `gemini-embedding-2`) and falls back to local hash embeddings when no key is available.
+- If `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) is configured, chat responses use Gemini (`GEMINI_CHAT_MODEL`, default `gemini-3-flash-preview`); otherwise the app falls back to a local extractive answer using the indexed chunks. The legacy vector API also uses Gemini embeddings (`GEMINI_EMBED_MODEL`, default `gemini-embedding-2`) with retrieval document/query task types and falls back to local hash embeddings when no key is available.
