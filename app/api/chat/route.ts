@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { embedTexts, generateAnswer } from "@/lib/mistral";
+import { embedTexts, generateAnswer } from "@/lib/gemini";
 import { searchChunks } from "@/lib/vector-store";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { AppError, LIMITS, safeErrorMessage, sanitizeProject } from "@/lib/security";
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       throw new AppError(`Question too long. Max ${LIMITS.maxQuestionLength} characters.`, 400, true);
     }
 
-    const [questionEmbedding] = await embedTexts([question]);
+    const [questionEmbedding] = await embedTexts([question], "RETRIEVAL_QUERY");
     const results = searchChunks(project, questionEmbedding, 5);
 
     if (!results.length) {
