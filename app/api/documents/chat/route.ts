@@ -17,10 +17,12 @@ export async function POST(request: Request) {
   }
 
   const relevant = retrieveRelevantChunks(question, chunks, 5);
-  const fallback = createExtractiveAnswer(question, relevant);
 
-  if (!process.env.MISTRAL_API_KEY) {
-    return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
+  if (!process.env.GEMINI_API_KEY) {
+    return NextResponse.json(
+      { ok: false, error: "GEMINI_API_KEY is not configured on the server." },
+      { status: 500 }
+    );
   }
 
   try {
@@ -28,11 +30,24 @@ export async function POST(request: Request) {
       .map((chunk, index) => `[${index + 1}] ${chunk.source} chunk ${chunk.chunkIndex}\n${chunk.text}`)
       .join("\n\n");
 
-    const answer = (await generateAnswer(context, question)).trim() || fallback.answer;
+    const answer = (await generateAnswer(context, question)).trim();
 
-    return NextResponse.json({ ok: true, answer, citations: fallback.citations, mode: "mistral" });
+    if (!answer) {
+      const fallback = createExtractiveAnswer(question, relevant);
+      return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
+    }
+
+    const citations = relevant.map((chunk, index) => ({
+      label: index + 1,
+      source: chunk.source,
+      chunkIndex: chunk.chunkIndex,
+      snippet: chunk.text.slice(0, 260)
+    }));
+
+    return NextResponse.json({ ok: true, answer, citations, mode: "gemini" });
   } catch (error) {
-    console.error("Mistral document chat error:", error);
+    console.error("Gemini document chat error:", error);
+    const fallback = createExtractiveAnswer(question, relevant);
     return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
   }
 }
