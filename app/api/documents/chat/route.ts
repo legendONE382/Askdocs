@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { generateAnswer } from "@/lib/mistral";
+import { generateAnswer } from "@/lib/gemini";
 import { createExtractiveAnswer, retrieveRelevantChunks, type DocumentChunk } from "@/lib/documents";
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const relevant = retrieveRelevantChunks(question, chunks, 5);
   const fallback = createExtractiveAnswer(question, relevant);
 
-  if (!process.env.MISTRAL_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
   }
 
@@ -30,9 +30,9 @@ export async function POST(request: Request) {
 
     const answer = (await generateAnswer(context, question)).trim() || fallback.answer;
 
-    return NextResponse.json({ ok: true, answer, citations: fallback.citations, mode: "mistral" });
+    return NextResponse.json({ ok: true, answer, citations: fallback.citations, mode: "gemini" });
   } catch (error) {
-    console.error("Mistral document chat error:", error);
+    console.error("Gemini document chat error:", error);
     return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
   }
 }
