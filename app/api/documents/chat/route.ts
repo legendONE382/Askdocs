@@ -30,9 +30,10 @@ export async function POST(request: Request) {
       .map((chunk, index) => `[${index + 1}] ${chunk.source} chunk ${chunk.chunkIndex}\n${chunk.text}`)
       .join("\n\n");
 
-    const answer = (await generateAnswer(context, question)).trim();
+    const answer = await generateAnswer(context, question);
 
-    if (!answer) {
+    const trimmed = answer.trim();
+    if (!trimmed) {
       const fallback = createExtractiveAnswer(question, relevant);
       return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
     }
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
       snippet: chunk.text.slice(0, 260)
     }));
 
-    return NextResponse.json({ ok: true, answer, citations, mode: "gemini" });
+    return NextResponse.json({ ok: true, answer: trimmed, citations, mode: "gemini" });
   } catch (error) {
     console.error("Gemini document chat error:", error);
     const fallback = createExtractiveAnswer(question, relevant);
