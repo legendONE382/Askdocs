@@ -1,6 +1,6 @@
 # AskDocs
 
-AskDocs is a Next.js document Q&A application scaffold where users can sign up, sign in, open a protected workspace, upload documents, and interact with a chat-style interface for grounded answers.
+RoutesDocsocs is a Next.js document Q&A application scaffold where users can sign up, sign in, open a protected workspace, upload documents, and interact with a chat-style interface for grounded answers.
 
 ## Highlights
 

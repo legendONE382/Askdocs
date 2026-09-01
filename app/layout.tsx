@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "AskDocs",
-  description: "Analyze documents with Mistral-powered RAG and ask grounded questions."
+  description: "Analyze documents with Gemini-powered RAG and ask grounded questions."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
