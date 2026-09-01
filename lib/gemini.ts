@@ -1,9 +1,9 @@
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
-const GEMINI_EMBED_MODEL = process.env.GEMINI_EMBED_MODEL || "gemini-embedding-001";
-const GEMINI_CHAT_MODEL = process.env.GEMINI_CHAT_MODEL || "gemini-2.5-flash";
+const GEMINI_EMBED_MODEL = (process.env.GEMINI_EMBED_MODEL || "gemini-embedding-001").trim();
+const GEMINI_CHAT_MODEL = (process.env.GEMINI_CHAT_MODEL || "gemini-2.5-flash").trim();
 
 function getApiKey(): string {
-  const key = process.env.GEMINI_API_KEY;
+  const key = (process.env.GEMINI_API_KEY || "").trim();
   if (!key) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }
@@ -14,13 +14,21 @@ async function geminiFetch(path: string, payload: unknown): Promise<Response> {
   const url = new URL(`${GEMINI_BASE_URL}${path}`);
   url.searchParams.set("key", getApiKey());
 
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60_000);
+
+  try {
+    return await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function hashEmbedding(text: string): number[] {

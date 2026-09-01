@@ -30,11 +30,20 @@ export async function POST(request: Request) {
       .map((chunk, index) => `[${index + 1}] ${chunk.source} chunk ${chunk.chunkIndex}\n${chunk.text}`)
       .join("\n\n");
 
-    const answer = (await generateAnswer(context, question)).trim();
+    const answer = await generateAnswer(context, question);
 
-    if (!answer) {
-      const fallback = createExtractiveAnswer(question, relevant);
-      return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
+    const trimmed = answer.trim();
+    if (!trimmed) {
+      return NextResponse.json({
+        ok: false,
+        error: "The AI could not generate an answer from the provided document context.",
+        citations: relevant.map((chunk, index) => ({
+          label: index + 1,
+          source: chunk.source,
+          chunkIndex: chunk.chunkIndex,
+          snippet: chunk.text.slice(0, 260)
+        }))
+      }, { status: 502 });
     }
 
     const citations = relevant.map((chunk, index) => ({
@@ -44,10 +53,18 @@ export async function POST(request: Request) {
       snippet: chunk.text.slice(0, 260)
     }));
 
-    return NextResponse.json({ ok: true, answer, citations, mode: "gemini" });
+    return NextResponse.json({ ok: true, answer: trimmed, citations, mode: "gemini" });
   } catch (error) {
     console.error("Gemini document chat error:", error);
-    const fallback = createExtractiveAnswer(question, relevant);
-    return NextResponse.json({ ok: true, answer: fallback.answer, citations: fallback.citations, mode: "extractive" });
+    return NextResponse.json({
+      ok: false,
+      error: "Answer generation failed. The AI service could not process the request.",
+      citations: relevant.map((chunk, index) => ({
+        label: index + 1,
+        source: chunk.source,
+        chunkIndex: chunk.chunkIndex,
+        snippet: chunk.text.slice(0, 260)
+      }))
+    }, { status: 502 });
   }
 }
