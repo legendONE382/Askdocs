@@ -75,6 +75,7 @@ export async function embedTexts(
 
 export async function generateAnswer(context: string, question: string): Promise<string> {
   const response = await geminiFetch(`/models/${GEMINI_CHAT_MODEL}:generateContent`, {
+    model: `models/${GEMINI_CHAT_MODEL}`,
     contents: [
       {
         role: "user",
