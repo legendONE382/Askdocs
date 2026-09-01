@@ -55,10 +55,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, answer: trimmed, citations, mode: "gemini" });
   } catch (error) {
-    console.error("Gemini document chat error:", error);
+    const message = error instanceof Error ? error.message : "Answer generation failed. The AI service could not process the request.";
+    console.error("Gemini document chat error:", message);
     return NextResponse.json({
       ok: false,
-      error: "Answer generation failed. The AI service could not process the request.",
+      error: message,
       citations: relevant.map((chunk, index) => ({
         label: index + 1,
         source: chunk.source,
