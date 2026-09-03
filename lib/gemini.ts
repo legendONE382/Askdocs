@@ -2,6 +2,8 @@ const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 const GEMINI_EMBED_MODEL = (process.env.GEMINI_EMBED_MODEL || "gemini-embedding-001").trim();
 const GEMINI_CHAT_MODEL = (process.env.GEMINI_CHAT_MODEL || "gemini-2.5-flash").trim();
 
+const GEMINI_V1_BASE_URL = "https://generativelanguage.googleapis.com/v1";
+
 function getApiKey(): string {
   const key = (process.env.GEMINI_API_KEY || "").trim();
   if (!key) {
@@ -118,7 +120,6 @@ export async function generateAnswer(context: string, question: string): Promise
       }
     };
 
-    const GEMINI_V1_BASE_URL = "https://generativelanguage.googleapis.com/v1";
     const v1Url = new URL(`${GEMINI_V1_BASE_URL}/models/${GEMINI_CHAT_MODEL}:generateContent`);
     v1Url.searchParams.set("key", getApiKey());
 
@@ -133,7 +134,10 @@ export async function generateAnswer(context: string, question: string): Promise
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "Unknown error");
-    throw new Error(`Gemini chat request failed with status ${response.status}: ${errorText}`);
+    const hint = response.status === 404
+      ? " If you are on the free tier, make sure your API key is restricted to the Gemini API in Google Cloud Console."
+      : "";
+    throw new Error(`Gemini chat request failed with status ${response.status}: ${errorText}${hint}`);
   }
 
   const data = (await response.json()) as {
