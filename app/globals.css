@@ -14,6 +14,31 @@ body {
   @apply rounded-2xl border border-slate-700/80 bg-panel/90 shadow-xl shadow-black/20;
 }
 
+/* Markdown prose inside assistant messages */
+.prose h1 {
+  @apply text-xl font-bold text-slate-50 mb-2;
+}
+
+.prose h2 {
+  @apply text-lg font-semibold text-slate-100 mb-2;
+}
+
+.prose p {
+  @apply mb-2 text-sm sm:text-base text-slate-200;
+}
+
+.prose li {
+  @apply ml-4 list-disc text-sm sm:text-base text-slate-200;
+}
+
+.prose strong {
+  @apply font-semibold text-slate-50;
+}
+
+.prose code {
+  @apply rounded bg-slate-900 px-1 py-0.5 font-mono text-xs text-rose-300;
+}
+
 /* Custom scrollbar for webkit browsers */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;

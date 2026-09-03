@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FileUp, Loader2, LogOut, SendHorizonal, Sparkles, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 
 type Citation = {
   source: string;
@@ -242,7 +243,11 @@ export default function MainApp({ username }: { username: string }) {
                   message.role === "user" ? "ml-0 sm:ml-10 bg-accent/20" : "mr-0 sm:mr-10 bg-slate-800"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                {message.role === "assistant" ? (
+                  <MarkdownRenderer content={message.content} className="prose prose-invert max-w-none" />
+                ) : (
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                )}
                 {message.citations?.length ? (
                   <div className="mt-3 space-y-2 border-t border-slate-700 pt-3">
                     {message.citations.map((citation) => (
