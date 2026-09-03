@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { generateAnswer } from "@/lib/groq";
+import { generateAnswer } from "@/lib/gemini";
 import { retrieveRelevantChunks, type DocumentChunk } from "@/lib/documents";
 
 export async function POST(request: Request) {
@@ -18,9 +18,9 @@ export async function POST(request: Request) {
 
   const relevant = retrieveRelevantChunks(question, chunks, 5);
 
-  if (!process.env.GROQ_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
-      { ok: false, error: "GROQ_API_KEY is not configured on the server." },
+      { ok: false, error: "GEMINI_API_KEY is not configured on the server." },
       { status: 500 }
     );
   }
@@ -53,10 +53,10 @@ export async function POST(request: Request) {
       snippet: chunk.text.slice(0, 260)
     }));
 
-    return NextResponse.json({ ok: true, answer: trimmed, citations, mode: "groq" });
+    return NextResponse.json({ ok: true, answer: trimmed, citations, mode: "gemini" });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Answer generation failed. The AI service could not process the request.";
-    console.error("Groq document chat error:", message);
+    console.error("Gemini document chat error:", message);
     return NextResponse.json({
       ok: false,
       error: message,
