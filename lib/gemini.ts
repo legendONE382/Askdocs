@@ -1,6 +1,6 @@
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 const GEMINI_EMBED_MODEL = (process.env.GEMINI_EMBED_MODEL || "gemini-embedding-001").trim();
-const GEMINI_CHAT_MODEL = (process.env.GEMINI_CHAT_MODEL || "gemini-2.5-flash").trim();
+const GEMINI_CHAT_MODEL = (process.env.GEMINI_CHAT_MODEL || "gemini-3.6-flash").trim();
 
 const GEMINI_V1_BASE_URL = "https://generativelanguage.googleapis.com/v1";
 
