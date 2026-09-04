@@ -1,9 +1,17 @@
 import { createHmac } from "crypto";
 
+function getAuthSecret(): string {
+  const secret = process.env.APP_AUTH_SECRET;
+
+  if (!secret) {
+    throw new Error("APP_AUTH_SECRET is not configured");
+  }
+
+  return secret;
+}
+
 const COOKIE_NAME = "askdocs_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
-
-const SECRET = process.env.APP_AUTH_SECRET || "askdocs-demo-secret-change-me";
 
 type SessionPayload = {
   userId: string;
@@ -24,7 +32,7 @@ function base64UrlDecode(input: string) {
 }
 
 function sign(data: string) {
-  return createHmac("sha256", SECRET).update(data).digest("base64url");
+  return createHmac("sha256", getAuthSecret()).update(data).digest("base64url");
 }
 
 function createToken(payload: SessionPayload) {
