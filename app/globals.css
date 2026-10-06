@@ -11,10 +11,14 @@ body {
 }
 
 .panel {
-  @apply rounded-2xl border border-slate-700/80 bg-panel/90 shadow-xl shadow-black/20;
+  @apply rounded-2xl border border-slate-700/60 bg-panel/90 shadow-xl shadow-black/20;
 }
 
 /* Markdown prose inside assistant messages */
+.prose {
+  @apply space-y-2 text-sm leading-relaxed sm:text-base;
+}
+
 .prose h1 {
   @apply text-xl font-bold text-slate-50 mb-2;
 }
@@ -24,11 +28,19 @@ body {
 }
 
 .prose p {
-  @apply mb-2 text-sm sm:text-base text-slate-200;
+  @apply text-slate-200;
+}
+
+.prose ul {
+  @apply ml-5 list-disc space-y-1 text-slate-200;
+}
+
+.prose ol {
+  @apply ml-5 list-decimal space-y-1 text-slate-200;
 }
 
 .prose li {
-  @apply ml-4 list-disc text-sm sm:text-base text-slate-200;
+  @apply text-slate-200;
 }
 
 .prose strong {
@@ -36,7 +48,11 @@ body {
 }
 
 .prose code {
-  @apply rounded bg-slate-900 px-1 py-0.5 font-mono text-xs text-rose-300;
+  @apply rounded bg-slate-900 px-1.5 py-0.5 font-mono text-xs text-rose-300;
+}
+
+.prose pre {
+  @apply overflow-x-auto rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-200;
 }
 
 /* Custom scrollbar for webkit browsers */
@@ -74,4 +90,17 @@ a {
 /* Focus visible for accessibility */
 *:focus-visible {
   @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-surface;
+}
+
+/* Prevent horizontal overflow */
+html,
+body {
+  @apply overflow-x-hidden;
+}
+
+/* Mobile safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

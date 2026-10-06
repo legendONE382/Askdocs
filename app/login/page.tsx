@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import AuthPageShell from "@/components/auth-page-shell";
 import LoginForm from "@/components/login-form";
 import { getCookieName, verifySessionToken } from "@/lib/auth-server";
 
@@ -12,5 +13,17 @@ export default function LoginPage() {
     redirect("/workspace");
   }
 
-  return <LoginForm />;
+  return (
+    <AuthPageShell
+      title="Welcome back"
+      subtitle="Sign in to access your workspace."
+      footer={{
+        text: "Don't have an account?",
+        linkText: "Create one",
+        href: "/signup"
+      }}
+    >
+      <LoginForm />
+    </AuthPageShell>
+  );
 }
