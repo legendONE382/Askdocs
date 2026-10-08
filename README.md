@@ -46,7 +46,7 @@ Required environment variables:
 | Variable | Purpose |
 |---|---|
 | `GEMINI_API_KEY` | Google Gemini API key for AI answers and embeddings |
-| `GEMINI_CHAT_MODEL` | Gemini model for chat (default: `gemini-3.6-flash`) |
+| `GEMINI_CHAT_MODEL` | Gemini model for chat (default: `gemini-1.5-flash`) |
 | `GEMINI_EMBED_MODEL` | Gemini model for embeddings (default: `gemini-embedding-001`) |
 | `APP_AUTH_SECRET` | Long random secret used to sign session cookies |
 
