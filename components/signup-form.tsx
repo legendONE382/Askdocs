@@ -1,7 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function SignupForm() {
   const [username, setUsername] = useState("");
@@ -45,54 +48,45 @@ export default function SignupForm() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md items-center p-6">
-      <section className="panel w-full p-6">
-        <h1 className="mb-4 text-2xl font-semibold">Create account</h1>
+    <form onSubmit={onSubmit} className="space-y-5">
+      {error ? (
+        <div className="rounded-xl border border-rose-500/40 bg-rose-950/40 p-3 text-sm text-rose-200" role="alert">
+          {error}
+        </div>
+      ) : null}
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <input
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            placeholder="Username"
-            autoComplete="username"
-            className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
-            required
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password"
-            autoComplete="new-password"
-            className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
-            required
-          />
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-            placeholder="Confirm password"
-            autoComplete="new-password"
-            className="w-full rounded-xl border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
-            required
-          />
-          {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-accent px-4 py-2 font-medium text-slate-950 disabled:opacity-70"
-          >
-            {loading ? "Creating account..." : "Create account"}
-          </button>
-        </form>
+      <Input
+        label="Username"
+        placeholder="Choose a username"
+        value={username}
+        onChange={setUsername}
+        autoComplete="username"
+        required
+      />
 
-        <p className="mt-4 text-sm text-slate-400">
-          Already have an account?{" "}
-          <Link href="/login" className="underline">
-            Login
-          </Link>
-        </p>
-      </section>
-    </main>
+      <Input
+        label="Password"
+        type="password"
+        placeholder="At least 8 characters with letters and numbers"
+        value={password}
+        onChange={setPassword}
+        autoComplete="new-password"
+        required
+      />
+
+      <Input
+        label="Confirm password"
+        type="password"
+        placeholder="Repeat your password"
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        autoComplete="new-password"
+        required
+      />
+
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? "Creating account…" : "Create account"}
+      </Button>
+    </form>
   );
 }
