@@ -344,82 +344,82 @@ export default function MainApp({ username }: { username: string }) {
               </div>
             ) : null}
 
-            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
-              {messages.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center py-12 text-center">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
-                    <FileUp className="text-accent" size={22} />
-                  </div>
-                  <h2 className="mb-2 text-lg font-semibold text-slate-100">
-                    Upload documents to get started
-                  </h2>
-                  <p className="mb-6 max-w-sm text-sm text-slate-300">
-                    Upload PDFs, DOCX, TXT, MD, or CSV files, then ask questions
-                    against their content. Answers come with source citations so
-                    you can verify results.
-                  </p>
-                  <div className="grid gap-2 text-left text-xs text-slate-300 sm:max-w-sm">
-                    {EXAMPLE_QUESTIONS.map((q) => (
-                      <button
-                        key={q}
-                        onClick={() => ask(q)}
-                        className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-left transition hover:border-accent hover:text-accent"
-                      >
-                        &ldquo;{q}&rdquo;
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {messages.map((message, index) => (
-                    <article
-                      key={`${message.role}-${index}`}
-                      className={[
-                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm sm:text-base animate-fade-in",
-                        message.role === "user"
-                          ? "ml-auto bg-accent/15 text-slate-100"
-                          : "mr-auto bg-slate-800 text-slate-200"
-                      ].join(" ")}
-                    >
-                      {message.role === "assistant" ? (
-                        <MarkdownRenderer content={message.content} className="prose prose-invert max-w-none" />
-                      ) : (
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                      )}
-                      {message.citations?.length ? (
-                        <div className="mt-3 space-y-2 border-t border-slate-700/60 pt-3">
-                          <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-                            Sources
-                          </p>
-                          {message.citations.map((citation) => (
-                            <div
-                              key={`${citation.source}-${citation.chunkIndex}`}
-                              className="rounded-lg bg-slate-900/80 p-2.5 text-xs text-slate-300"
-                            >
-                              <p className="mb-1 font-medium text-slate-100">
-                                {citation.source} · chunk {citation.chunkIndex}
-                              </p>
-                              <p className="leading-relaxed text-slate-300">
-                                {citation.snippet}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                    </article>
-                  ))}
-                  {chatting ? (
-                    <div className="mr-auto max-w-[85%] rounded-2xl rounded-tl-sm bg-slate-800 px-4 py-3 text-sm text-slate-200">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="animate-spin text-accent" size={14} />
-                        <span className="text-slate-300">Answering from your documents…</span>
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              )}
-            </div>
+             <div className="flex-1 space-y-4 overflow-y-auto px-3 py-4 sm:px-6">
+               {messages.length === 0 ? (
+                 <div className="flex h-full flex-col items-center justify-center py-12 text-center">
+                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
+                     <FileUp className="text-accent" size={22} />
+                   </div>
+                   <h2 className="mb-2 text-lg font-semibold text-slate-100">
+                     Upload documents to get started
+                   </h2>
+                   <p className="mb-6 max-w-sm text-sm text-slate-300">
+                     Upload PDFs, DOCX, TXT, MD, or CSV files, then ask questions
+                     against their content. Answers come with source citations so
+                     you can verify results.
+                   </p>
+                   <div className="grid w-full gap-2 text-left text-xs text-slate-300 sm:max-w-sm">
+                     {EXAMPLE_QUESTIONS.map((q) => (
+                       <button
+                         key={q}
+                         onClick={() => ask(q)}
+                         className="rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-left transition hover:border-accent hover:text-accent"
+                       >
+                         &ldquo;{q}&rdquo;
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+               ) : (
+                 <>
+                   {messages.map((message, index) => (
+                     <article
+                       key={`${message.role}-${index}`}
+                       className={[
+                         "w-full max-w-[92%] rounded-2xl px-3 py-3 text-sm sm:max-w-[85%] sm:px-4 sm:text-base animate-fade-in",
+                         message.role === "user"
+                           ? "ml-auto bg-accent/15 text-slate-100"
+                           : "mr-auto bg-slate-800 text-slate-200"
+                       ].join(" ")}
+                     >
+                       {message.role === "assistant" ? (
+                         <MarkdownRenderer content={message.content} className="prose prose-invert max-w-none" />
+                       ) : (
+                         <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                       )}
+                       {message.citations?.length ? (
+                         <div className="mt-3 space-y-2 border-t border-slate-700/60 pt-3">
+                           <p className="text-xs font-medium uppercase tracking-wider text-subtle">
+                             Sources
+                           </p>
+                           {message.citations.map((citation) => (
+                             <div
+                               key={`${citation.source}-${citation.chunkIndex}`}
+                               className="rounded-lg bg-slate-900/80 p-2.5 text-xs text-slate-300"
+                             >
+                               <p className="mb-1 font-medium text-slate-100">
+                                 {citation.source} · chunk {citation.chunkIndex}
+                               </p>
+                               <p className="leading-relaxed text-slate-300 break-words">
+                                 {citation.snippet}
+                               </p>
+                             </div>
+                           ))}
+                         </div>
+                       ) : null}
+                     </article>
+                   ))}
+                   {chatting ? (
+                     <div className="mr-auto w-full max-w-[92%] rounded-2xl rounded-tl-sm bg-slate-800 px-4 py-3 text-sm text-slate-200 sm:max-w-[85%]">
+                       <div className="flex items-center gap-2">
+                         <Loader2 className="animate-spin text-accent" size={14} />
+                         <span className="text-slate-300">Answering from your documents…</span>
+                       </div>
+                     </div>
+                   ) : null}
+                 </>
+               )}
+             </div>
 
             {/* Input area */}
             <div className="border-t border-slate-700/40 bg-surface/80 px-4 pb-4 pt-4 backdrop-blur sm:px-6">

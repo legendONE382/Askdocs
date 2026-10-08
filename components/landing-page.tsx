@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, FileText, MessageSquareQuote, Upload } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  MessageSquareQuote,
+  Upload,
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
+  Globe
+} from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 
 type LandingProps = {
@@ -11,7 +20,12 @@ export default function LandingPage({ isLoggedIn }: LandingProps) {
     <div className="min-h-screen">
       <header className="border-b border-slate-700/40 bg-surface/80 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <span className="text-lg font-semibold text-slate-50">AskDocs</span>
+          <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-slate-50">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
+              <FileText className="text-accent" size={18} />
+            </div>
+            AskDocs
+          </Link>
           <nav className="flex items-center gap-3" aria-label="Account">
             {isLoggedIn ? (
               <Link
@@ -42,8 +56,10 @@ export default function LandingPage({ isLoggedIn }: LandingProps) {
 
       <main>
         <Hero isLoggedIn={isLoggedIn} />
+        <TrustBar />
         <HowItWorks />
         <ProductPreview />
+        <WhyAskDocs />
         <UseCases />
         <SupportedFiles />
         <CTASection isLoggedIn={isLoggedIn} />
@@ -58,19 +74,19 @@ export default function LandingPage({ isLoggedIn }: LandingProps) {
 
 function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <section className="relative overflow-hidden px-4 pb-16 pt-16 sm:px-6 sm:pb-24 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-32">
+    <section className="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-36 lg:pt-32">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(94,161,255,0.08),transparent_60%)]" />
       <div className="mx-auto max-w-4xl text-center">
         <span className="mb-6 inline-flex rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
           Chat with your documents
         </span>
         <SectionHeading level={1} className="mb-6">
-          Upload files. Ask questions.
-          <span className="block text-accent">Get grounded answers with sources.</span>
+          Turn your documents into answers.
+          <span className="block text-accent">No more endless searching.</span>
         </SectionHeading>
-        <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
-          AskDocs reads your documents — PDFs, Word files, text, and more — and lets you
-          ask questions in plain language. Every answer comes with source citations so you
-          can verify what the AI is telling you.
+        <p className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+          Upload your PDFs, Word docs, and text files. AskDocs reads them and
+          answers your questions with direct references back to the source.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {isLoggedIn ? (
@@ -100,8 +116,31 @@ function Hero({ isLoggedIn }: { isLoggedIn: boolean }) {
           )}
         </div>
         <p className="mt-4 text-xs text-slate-400">
-          No credit card required. Works with local files in your workspace.
+          Free to use. No credit card required.
         </p>
+      </div>
+    </section>
+  );
+}
+
+function TrustBar() {
+  const items = [
+    { icon: ShieldCheck, text: "HTTP-only sessions" },
+    { icon: Globe, text: "Runs locally in your workspace" },
+    { icon: Zap, text: "Answers in seconds" }
+  ];
+
+  return (
+    <section className="border-y border-slate-700/40 bg-slate-900/40 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+          {items.map((item) => (
+            <div key={item.text} className="flex items-center gap-2 text-xs text-slate-300 sm:text-sm">
+              <item.icon size={16} className="text-accent" />
+              <span>{item.text}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -130,14 +169,16 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="border-t border-slate-700/40 bg-slate-900/40 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+    <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading level={2} className="mb-3 text-center">
-          How it works
-        </SectionHeading>
-        <p className="mx-auto mb-12 max-w-2xl text-center text-sm text-slate-300 sm:text-base">
-          Three steps from document collection to answer.
-        </p>
+        <div className="mb-14 text-center">
+          <SectionHeading level={2} className="mb-3">
+            How it works
+          </SectionHeading>
+          <p className="mx-auto max-w-2xl text-sm text-slate-300 sm:text-base">
+            Three steps from document collection to answer.
+          </p>
+        </div>
         <div className="grid gap-8 sm:grid-cols-3">
           {steps.map((step, index) => (
             <div
@@ -166,14 +207,16 @@ function HowItWorks() {
 
 function ProductPreview() {
   return (
-    <section className="border-t border-slate-700/40 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+    <section className="border-y border-slate-700/40 bg-slate-900/40 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading level={2} className="mb-3 text-center">
-          See AskDocs in action
-        </SectionHeading>
-        <p className="mx-auto mb-12 max-w-2xl text-center text-sm text-slate-300 sm:text-base">
-          Upload documents, ask questions, and get cited answers inside a single workspace.
-        </p>
+        <div className="mb-14 text-center">
+          <SectionHeading level={2} className="mb-3">
+            See AskDocs in action
+          </SectionHeading>
+          <p className="mx-auto max-w-2xl text-sm text-slate-300 sm:text-base">
+            Upload documents, ask questions, and get cited answers inside a single workspace.
+          </p>
+        </div>
 
         <div className="panel overflow-hidden">
           <div className="grid divide-x divide-slate-700/60 lg:grid-cols-[280px_1fr]">
@@ -270,6 +313,66 @@ function ProductPreview() {
   );
 }
 
+function WhyAskDocs() {
+  const benefits = [
+    {
+      title: "Grounded answers",
+      description:
+        "Every answer is tied to the actual text in your documents. No guessing, no hallucinations from general knowledge."
+    },
+    {
+      title: "Source citations",
+      description:
+        "See exactly where the answer came from. Click through to the original document snippet to verify or dig deeper."
+    },
+    {
+      title: "Multiple formats",
+      description:
+        "Works with PDFs, Word documents, plain text, markdown, and CSV files. Upload what you already have."
+    },
+    {
+      title: "Private workspace",
+      description:
+        "Your documents stay in your workspace session. AskDocs is designed for focused, private document work."
+    }
+  ];
+
+  return (
+    <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-14 text-center">
+          <SectionHeading level={2} className="mb-3">
+            Why AskDocs
+          </SectionHeading>
+          <p className="mx-auto max-w-2xl text-sm text-slate-300 sm:text-base">
+            Built around the actual way people work with documents.
+          </p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {benefits.map((item) => (
+            <div
+              key={item.title}
+              className="panel flex h-full flex-col gap-3 p-5"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
+                <CheckCircle2 className="text-accent" size={18} />
+              </div>
+              <div>
+                <h3 className="mb-1 text-sm font-semibold text-slate-100">
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-slate-300">
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function UseCases() {
   const cases = [
     {
@@ -305,15 +408,16 @@ function UseCases() {
   ];
 
   return (
-    <section className="border-t border-slate-700/40 bg-slate-900/40 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+    <section className="border-y border-slate-700/40 bg-slate-900/40 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading level={2} className="mb-3 text-center">
-          Built for real document workflows
-        </SectionHeading>
-        <p className="mx-auto mb-12 max-w-2xl text-center text-sm text-slate-300 sm:text-base">
-          From researchers to ops teams, AskDocs helps you work with document
-          collections faster.
-        </p>
+        <div className="mb-14 text-center">
+          <SectionHeading level={2} className="mb-3">
+            Built for real document workflows
+          </SectionHeading>
+          <p className="mx-auto max-w-2xl text-sm text-slate-300 sm:text-base">
+            From researchers to ops teams, AskDocs helps you work with document collections faster.
+          </p>
+        </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cases.map((item) => (
             <div
@@ -338,7 +442,7 @@ function SupportedFiles() {
   const formats = ["PDF", "DOCX", "TXT", "MD", "CSV"];
 
   return (
-    <section className="border-t border-slate-700/40 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+    <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
         <SectionHeading level={2} className="mb-3">
           Works with the files you already use
@@ -363,14 +467,13 @@ function SupportedFiles() {
 
 function CTASection({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <section className="border-t border-slate-700/40 bg-slate-900/40 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+    <section className="border-t border-slate-700/40 bg-slate-900/40 px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
         <SectionHeading level={2} className="mb-4">
           Ready to try AskDocs?
         </SectionHeading>
         <p className="mx-auto mb-8 max-w-xl text-sm text-slate-300 sm:text-base">
-          Create a workspace, upload your documents, and start asking questions in
-          minutes.
+          Create a workspace, upload your documents, and start asking questions in minutes.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {isLoggedIn ? (
